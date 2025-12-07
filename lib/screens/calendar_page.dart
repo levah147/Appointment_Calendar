@@ -22,9 +22,13 @@ class _CalendarPageState extends State<CalendarPage> {
   late String currentTimeString;
   Timer? _timer;
   bool isLoading = true;
-  
+
   final ScrollController _horizontalScrollController = ScrollController();
   final ScrollController _verticalScrollController = ScrollController();
+  final ScrollController _timeColumnScrollController = ScrollController();
+  final ScrollController _calendarGridVerticalController = ScrollController();
+
+  bool _isSyncingScroll = false;
 
   @override
   void initState() {
@@ -33,6 +37,9 @@ class _CalendarPageState extends State<CalendarPage> {
     timeSlots = TimeCalculations.generateTimeSlots();
     currentTimePosition = TimeCalculations.getCurrentTimePosition();
     currentTimeString = TimeCalculations.getCurrentTimeString();
+
+    // Setup scroll synchronization
+    _setupScrollSynchronization();
 
     // Load data from assets
     _loadData();
@@ -46,6 +53,28 @@ class _CalendarPageState extends State<CalendarPage> {
     });
   }
 
+  void _setupScrollSynchronization() {
+    // Sync time column scroll to calendar grid
+    _timeColumnScrollController.addListener(() {
+      if (!_isSyncingScroll && _calendarGridVerticalController.hasClients) {
+        _isSyncingScroll = true;
+        _calendarGridVerticalController
+            .jumpTo(_timeColumnScrollController.offset);
+        _isSyncingScroll = false;
+      }
+    });
+
+    // Sync calendar grid scroll to time column
+    _calendarGridVerticalController.addListener(() {
+      if (!_isSyncingScroll && _timeColumnScrollController.hasClients) {
+        _isSyncingScroll = true;
+        _timeColumnScrollController
+            .jumpTo(_calendarGridVerticalController.offset);
+        _isSyncingScroll = false;
+      }
+    });
+  }
+
   Future<void> _loadData() async {
     setState(() => isLoading = true);
     final data = await DataService.loadStaffBookings();
@@ -53,7 +82,7 @@ class _CalendarPageState extends State<CalendarPage> {
       staffBookings = data;
       isLoading = false;
     });
-    
+
     // Scroll to current time after data is loaded and UI is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToCurrentTime();
@@ -65,28 +94,53 @@ class _CalendarPageState extends State<CalendarPage> {
     _timer?.cancel();
     _horizontalScrollController.dispose();
     _verticalScrollController.dispose();
+    _timeColumnScrollController.dispose();
+    _calendarGridVerticalController.dispose();
     super.dispose();
   }
 
   void _scrollToCurrentTime() {
-    // Check if controller is attached before scrolling
-    if (!_verticalScrollController.hasClients) return;
-    
+    // Check if controllers are attached before scrolling
+    if (!_timeColumnScrollController.hasClients ||
+        !_calendarGridVerticalController.hasClients) return;
+
     final scrollPosition = currentTimePosition - 200;
     if (scrollPosition > 0 && scrollPosition < 1920 - 400) {
-      _verticalScrollController.animateTo(
+      _isSyncingScroll = true;
+      _timeColumnScrollController.animateTo(
         scrollPosition,
         duration: const Duration(milliseconds: 500),
         curve: Curves.easeInOut,
       );
+      _calendarGridVerticalController.animateTo(
+        scrollPosition,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
+      _isSyncingScroll = false;
     }
+  }
+
+  bool _isCurrentHour(int hour) {
+    final now = DateTime.now();
+    return now.hour == hour;
   }
 
   String _formatDate(DateTime date) {
     final weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
     final months = [
-      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec'
     ];
     return '${weekdays[date.weekday - 1]} ${date.day} ${months[date.month - 1]}';
   }
@@ -232,7 +286,9 @@ class _CalendarPageState extends State<CalendarPage> {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.menu, size: 24, color: Theme.of(context).textTheme.bodyLarge?.color),
+                      Icon(Icons.menu,
+                          size: 24,
+                          color: Theme.of(context).textTheme.bodyLarge?.color),
                       const SizedBox(width: 16),
                       GestureDetector(
                         onTap: () {
@@ -245,12 +301,19 @@ class _CalendarPageState extends State<CalendarPage> {
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
-                                color: Theme.of(context).textTheme.bodyLarge?.color,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge
+                                    ?.color,
                               ),
                             ),
                             const SizedBox(width: 4),
-                            Icon(Icons.keyboard_arrow_down, size: 20, 
-                                color: Theme.of(context).textTheme.bodyLarge?.color),
+                            Icon(Icons.keyboard_arrow_down,
+                                size: 20,
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge
+                                    ?.color),
                           ],
                         ),
                       ),
@@ -258,12 +321,16 @@ class _CalendarPageState extends State<CalendarPage> {
                   ),
                   Row(
                     children: [
-                      Icon(Icons.tune, size: 22, color: Theme.of(context).textTheme.bodyLarge?.color),
+                      Icon(Icons.tune,
+                          size: 22,
+                          color: Theme.of(context).textTheme.bodyLarge?.color),
                       const SizedBox(width: 16),
                       Stack(
                         children: [
-                          Icon(Icons.notifications_outlined, size: 22, 
-                              color: Theme.of(context).textTheme.bodyLarge?.color),
+                          Icon(Icons.notifications_outlined,
+                              size: 22,
+                              color:
+                                  Theme.of(context).textTheme.bodyLarge?.color),
                           Positioned(
                             right: 0,
                             top: 0,
@@ -321,19 +388,22 @@ class _CalendarPageState extends State<CalendarPage> {
                                 decoration: BoxDecoration(
                                   color: Theme.of(context).colorScheme.surface,
                                   border: Border(
-                                    bottom: BorderSide(color: AppTheme.getBorderColor(context)),
+                                    bottom: BorderSide(
+                                        color:
+                                            AppTheme.getBorderColor(context)),
                                   ),
                                 ),
                               ),
                               // Time labels (scrollable vertically)
                               Expanded(
                                 child: SingleChildScrollView(
-                                  controller: _verticalScrollController,
+                                  controller: _timeColumnScrollController,
                                   physics: const ClampingScrollPhysics(),
                                   child: SizedBox(
                                     height: 1920,
                                     child: Stack(
                                       children: [
+                                        // Time labels
                                         for (int i = 0; i < 24; i++)
                                           Positioned(
                                             top: i * 80.0,
@@ -343,17 +413,49 @@ class _CalendarPageState extends State<CalendarPage> {
                                               height: 80,
                                               child: Center(
                                                 child: Text(
-                                                  TimeCalculations.formatTimeDisplay(
+                                                  TimeCalculations
+                                                      .formatTimeDisplay(
                                                     '${i.toString().padLeft(2, '0')}:00',
                                                   ),
                                                   style: TextStyle(
                                                     fontSize: 12,
-                                                    color: AppTheme.getTimeTextColor(context),
+                                                    color: _isCurrentHour(i)
+                                                        ? Colors.red
+                                                        : AppTheme
+                                                            .getTimeTextColor(
+                                                                context),
+                                                    fontWeight:
+                                                        _isCurrentHour(i)
+                                                            ? FontWeight.bold
+                                                            : FontWeight.normal,
                                                   ),
                                                 ),
                                               ),
                                             ),
                                           ),
+                                        // Current time indicator line (red line)
+                                        Positioned(
+                                          top: currentTimePosition,
+                                          left: 0,
+                                          right: 0,
+                                          child: Container(
+                                            height: 2,
+                                            color: Colors.red,
+                                          ),
+                                        ),
+                                        // Current time indicator circle
+                                        Positioned(
+                                          top: currentTimePosition - 8,
+                                          left: -8,
+                                          child: Container(
+                                            width: 16,
+                                            height: 16,
+                                            decoration: const BoxDecoration(
+                                              color: Colors.red,
+                                              shape: BoxShape.circle,
+                                            ),
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -373,7 +475,9 @@ class _CalendarPageState extends State<CalendarPage> {
                                 decoration: BoxDecoration(
                                   color: Theme.of(context).colorScheme.surface,
                                   border: Border(
-                                    bottom: BorderSide(color: AppTheme.getBorderColor(context)),
+                                    bottom: BorderSide(
+                                        color:
+                                            AppTheme.getBorderColor(context)),
                                   ),
                                 ),
                                 child: SingleChildScrollView(
@@ -382,7 +486,8 @@ class _CalendarPageState extends State<CalendarPage> {
                                   physics: const ClampingScrollPhysics(),
                                   child: Row(
                                     children: staffBookings.map((staffBooking) {
-                                      return _buildStaffHeader(context, staffBooking);
+                                      return _buildStaffHeader(
+                                          context, staffBooking);
                                     }).toList(),
                                   ),
                                 ),
@@ -391,24 +496,29 @@ class _CalendarPageState extends State<CalendarPage> {
                               // Calendar Grid (Scrolls both vertically and horizontally)
                               Expanded(
                                 child: SingleChildScrollView(
-                                  controller: _verticalScrollController,
+                                  controller: _calendarGridVerticalController,
                                   physics: const ClampingScrollPhysics(),
                                   child: SingleChildScrollView(
                                     controller: _horizontalScrollController,
                                     scrollDirection: Axis.horizontal,
                                     physics: const ClampingScrollPhysics(),
                                     child: Row(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: staffBookings.map((staffBooking) {
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children:
+                                          staffBookings.map((staffBooking) {
                                         return StaffColumnWidget(
                                           staffBooking: staffBooking,
-                                          currentTimePosition: currentTimePosition,
+                                          currentTimePosition:
+                                              currentTimePosition,
                                           currentTimeString: currentTimeString,
                                           onTimeSlotTap: (time) {
-                                            print('Tapped on ${staffBooking.staff.name} at $time');
+                                            print(
+                                                'Tapped on ${staffBooking.staff.name} at $time');
                                           },
                                           onBookingTap: (booking) {
-                                            print('Tapped on booking: ${booking.id}');
+                                            print(
+                                                'Tapped on booking: ${booking.id}');
                                           },
                                         );
                                       }).toList(),
@@ -435,8 +545,8 @@ class _CalendarPageState extends State<CalendarPage> {
             backgroundColor: Theme.of(context).colorScheme.surface,
             elevation: 4,
             onPressed: _goToToday,
-            child: Icon(Icons.calendar_today, 
-                color: Theme.of(context).textTheme.bodyLarge?.color, size: 20),
+            child: Icon(Icons.event_repeat_outlined,
+                color: Theme.of(context).textTheme.bodyLarge?.color, size: 25),
           ),
           const SizedBox(height: 12),
           FloatingActionButton(
@@ -444,8 +554,8 @@ class _CalendarPageState extends State<CalendarPage> {
             backgroundColor: Theme.of(context).colorScheme.surface,
             elevation: 4,
             onPressed: () {},
-            child: Icon(Icons.people_outline, 
-                color: Theme.of(context).textTheme.bodyLarge?.color, size: 20),
+            child: Icon(Icons.groups_outlined,
+                color: Theme.of(context).textTheme.bodyLarge?.color, size: 25),
           ),
         ],
       ),
@@ -467,11 +577,12 @@ class _CalendarPageState extends State<CalendarPage> {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             IconButton(
-              icon: Icon(Icons.calendar_today, color: Theme.of(context).primaryColor),
+              icon: Icon(Icons.calendar_today,
+                  color: Theme.of(context).primaryColor),
               onPressed: () {},
             ),
             IconButton(
-              icon: Icon(Icons.local_offer_outlined, 
+              icon: Icon(Icons.local_offer_outlined,
                   color: Theme.of(context).textTheme.bodySmall?.color),
               onPressed: () {},
             ),
@@ -488,12 +599,12 @@ class _CalendarPageState extends State<CalendarPage> {
               ),
             ),
             IconButton(
-              icon: Icon(Icons.emoji_emotions_outlined, 
+              icon: Icon(Icons.emoji_emotions_outlined,
                   color: Theme.of(context).textTheme.bodySmall?.color),
               onPressed: () {},
             ),
             IconButton(
-              icon: Icon(Icons.apps, 
+              icon: Icon(Icons.grid_view,
                   color: Theme.of(context).textTheme.bodySmall?.color),
               onPressed: () {},
             ),
