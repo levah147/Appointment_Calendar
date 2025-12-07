@@ -27,8 +27,11 @@ class _CalendarPageState extends State<CalendarPage> {
   final ScrollController _verticalScrollController = ScrollController();
   final ScrollController _timeColumnScrollController = ScrollController();
   final ScrollController _calendarGridVerticalController = ScrollController();
+  final ScrollController _staffHeaderScrollController = ScrollController();
+  final ScrollController _calendarGridHorizontalController = ScrollController();
 
   bool _isSyncingScroll = false;
+  bool _isSyncingHorizontalScroll = false;
 
   @override
   void initState() {
@@ -54,7 +57,7 @@ class _CalendarPageState extends State<CalendarPage> {
   }
 
   void _setupScrollSynchronization() {
-    // Sync time column scroll to calendar grid
+    // Sync time column scroll to calendar grid (vertical)
     _timeColumnScrollController.addListener(() {
       if (!_isSyncingScroll && _calendarGridVerticalController.hasClients) {
         _isSyncingScroll = true;
@@ -64,13 +67,35 @@ class _CalendarPageState extends State<CalendarPage> {
       }
     });
 
-    // Sync calendar grid scroll to time column
+    // Sync calendar grid scroll to time column (vertical)
     _calendarGridVerticalController.addListener(() {
       if (!_isSyncingScroll && _timeColumnScrollController.hasClients) {
         _isSyncingScroll = true;
         _timeColumnScrollController
             .jumpTo(_calendarGridVerticalController.offset);
         _isSyncingScroll = false;
+      }
+    });
+
+    // Sync staff header scroll to calendar grid (horizontal)
+    _staffHeaderScrollController.addListener(() {
+      if (!_isSyncingHorizontalScroll &&
+          _calendarGridHorizontalController.hasClients) {
+        _isSyncingHorizontalScroll = true;
+        _calendarGridHorizontalController
+            .jumpTo(_staffHeaderScrollController.offset);
+        _isSyncingHorizontalScroll = false;
+      }
+    });
+
+    // Sync calendar grid scroll to staff header (horizontal)
+    _calendarGridHorizontalController.addListener(() {
+      if (!_isSyncingHorizontalScroll &&
+          _staffHeaderScrollController.hasClients) {
+        _isSyncingHorizontalScroll = true;
+        _staffHeaderScrollController
+            .jumpTo(_calendarGridHorizontalController.offset);
+        _isSyncingHorizontalScroll = false;
       }
     });
   }
@@ -86,7 +111,23 @@ class _CalendarPageState extends State<CalendarPage> {
     // Scroll to current time after data is loaded and UI is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToCurrentTime();
+      _syncHorizontalScrollPositions();
     });
+  }
+
+  void _syncHorizontalScrollPositions() {
+    // Ensure staff header and calendar grid start with the same scroll position
+    if (_staffHeaderScrollController.hasClients &&
+        _calendarGridHorizontalController.hasClients) {
+      final headerOffset = _staffHeaderScrollController.offset;
+      final gridOffset = _calendarGridHorizontalController.offset;
+
+      if (headerOffset != gridOffset) {
+        _isSyncingHorizontalScroll = true;
+        _calendarGridHorizontalController.jumpTo(headerOffset);
+        _isSyncingHorizontalScroll = false;
+      }
+    }
   }
 
   @override
@@ -96,6 +137,8 @@ class _CalendarPageState extends State<CalendarPage> {
     _verticalScrollController.dispose();
     _timeColumnScrollController.dispose();
     _calendarGridVerticalController.dispose();
+    _staffHeaderScrollController.dispose();
+    _calendarGridHorizontalController.dispose();
     super.dispose();
   }
 
@@ -481,7 +524,7 @@ class _CalendarPageState extends State<CalendarPage> {
                                   ),
                                 ),
                                 child: SingleChildScrollView(
-                                  controller: _horizontalScrollController,
+                                  controller: _staffHeaderScrollController,
                                   scrollDirection: Axis.horizontal,
                                   physics: const ClampingScrollPhysics(),
                                   child: Row(
@@ -499,7 +542,8 @@ class _CalendarPageState extends State<CalendarPage> {
                                   controller: _calendarGridVerticalController,
                                   physics: const ClampingScrollPhysics(),
                                   child: SingleChildScrollView(
-                                    controller: _horizontalScrollController,
+                                    controller:
+                                        _calendarGridHorizontalController,
                                     scrollDirection: Axis.horizontal,
                                     physics: const ClampingScrollPhysics(),
                                     child: Row(
