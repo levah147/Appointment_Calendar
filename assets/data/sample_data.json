@@ -1,0 +1,122 @@
+
+{
+  "success": true,
+  "message": "Calendar data retrieved successfully",
+  "data": {
+    "date": "2025-11-10",
+    "timezone": "UTC",
+    "timeRange": {
+      "start": "09:00",
+      "end": "17:00"
+    },
+    "staffBookings": [
+      {
+        "staff": {
+          "id": "cmhrm8owt003sn64fuy81ca0h",
+          "name": "Lisa Davis",
+          "color": "#F97316",
+          "avatar": "LD"
+        },
+        "workingHours": {
+          "start": "09:00",
+          "end": "17:00"
+        },
+        "breaks": [],
+        "unavailability": [],
+        "bookings": [
+          {
+            "id": "cmht8h9lg0016n6q1yvbtbgru",
+            "startTime": "09:00",
+            "endTime": "11:00",
+            "status": "pending",
+            "customer": {
+              "id": "cmhrn0rd00009n6udm51xud10",
+              "name": "Jevz Krishn",
+              "phone": "",
+              "email": "customer@jj.com",
+              "avatar": "JK"
+            },
+            "service": {
+              "id": "cmhrm8de30003n64fjk4mymqp",
+              "name": "Hair Coloring",
+              "color": "#DC2626",
+              "duration": 120
+            }
+          }
+        ]
+      },
+      {
+        "staff": {
+          "id": "cmhrm8owx003wn64fe0be9gib",
+          "name": "Maria Martinez",
+          "color": "#F97316",
+          "avatar": "MM"
+        },
+        "workingHours": {
+          "start": "09:00",
+          "end": "17:00"
+        },
+        "breaks": [
+          {
+            "start": "12:00",
+            "end": "13:00"
+          }
+        ],
+        "unavailability": [],
+        "bookings": [
+          {
+            "id": "cmht82lox0014n6q1q7whxx37",
+            "startTime": "09:45",
+            "endTime": "11:15",
+            "status": "pending",
+            "customer": {
+              "id": "cmhrn0rd00009n6udm51xud10",
+              "name": "Jevz Krishn",
+              "phone": "",
+              "email": "customer@jj.com",
+              "avatar": "JK"
+            },
+            "service": {
+              "id": "cmhrm8dec000fn64f7i9f1jr4",
+              "name": "Anti-Aging Facial",
+              "color": "#DC2626",
+              "duration": 90
+            }
+          }
+        ]
+      },
+      {
+        "staff": {
+          "id": "cmhrm8owv003un64flr98o7gc",
+          "name": "Robert Rodriguez",
+          "color": "#F97316",
+          "avatar": "RR"
+        },
+        "breaks": [],
+        "unavailability": [
+          {
+            "type": "day_off",
+            "reason": "Staff is not scheduled to work on this day",
+            "date": "2025-11-10"
+          }
+        ],
+        "bookings": []
+      },
+      {
+        "staff": {
+          "id": "cmhrm8owz003yn64faygmbc5o",
+          "name": "William Hernandez",
+          "color": "#F97316",
+          "avatar": "WH"
+        },
+        "workingHours": {
+          "start": "09:00",
+          "end": "17:00"
+        },
+        "breaks": [],
+        "unavailability": [],
+        "bookings": []
+      }
+    ]
+  }
+}
