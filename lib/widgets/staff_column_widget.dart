@@ -226,30 +226,8 @@ class StaffColumnWidget extends StatelessWidget {
                       ),
                     ),
 
-                // Current Time Indicator
-                if (!isUnavailable)
-                  Positioned(
-                    top: currentTimePosition,
-                    left: 0,
-                    right: 0,
-                    child: Container(
-                      height: 2,
-                      color: Colors.red,
-                    ),
-                  ),
-                if (!isUnavailable)
-                  Positioned(
-                    top: currentTimePosition - 8,
-                    left: -8,
-                    child: Container(
-                      width: 16,
-                      height: 16,
-                      decoration: const BoxDecoration(
-                        color: Colors.red,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                  ),
+                // Note: Current time indicator line is now rendered in the parent calendar grid
+                // to ensure it's continuous across all staff columns without joints
           ],
         ),
       ),

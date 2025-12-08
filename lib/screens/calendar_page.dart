@@ -499,6 +499,50 @@ class _CalendarPageState extends State<CalendarPage> {
                                             ),
                                           ),
                                         ),
+                                        // Current time tooltip/bubble (red line goes through middle)
+                                        Positioned(
+                                          top: currentTimePosition - 10,
+                                          left: 0,
+                                          right: 0,
+                                          child: Center(
+                                            child: Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                horizontal: 8,
+                                                vertical: 4,
+                                              ),
+                                              decoration: BoxDecoration(
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .surface,
+                                                borderRadius:
+                                                    BorderRadius.circular(12),
+                                                border: Border.all(
+                                                  color: Colors.red,
+                                                  width: 1,
+                                                ),
+                                                boxShadow: [
+                                                  BoxShadow(
+                                                    color: Colors.black
+                                                        .withOpacity(0.1),
+                                                    blurRadius: 4,
+                                                    offset: const Offset(0, 2),
+                                                  ),
+                                                ],
+                                              ),
+                                              child: Text(
+                                                TimeCalculations
+                                                    .formatTimeDisplay(
+                                                        currentTimeString),
+                                                style: const TextStyle(
+                                                  color: Colors.red,
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w600,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -546,26 +590,45 @@ class _CalendarPageState extends State<CalendarPage> {
                                         _calendarGridHorizontalController,
                                     scrollDirection: Axis.horizontal,
                                     physics: const ClampingScrollPhysics(),
-                                    child: Row(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children:
-                                          staffBookings.map((staffBooking) {
-                                        return StaffColumnWidget(
-                                          staffBooking: staffBooking,
-                                          currentTimePosition:
-                                              currentTimePosition,
-                                          currentTimeString: currentTimeString,
-                                          onTimeSlotTap: (time) {
-                                            print(
-                                                'Tapped on ${staffBooking.staff.name} at $time');
-                                          },
-                                          onBookingTap: (booking) {
-                                            print(
-                                                'Tapped on booking: ${booking.id}');
-                                          },
-                                        );
-                                      }).toList(),
+                                    child: SizedBox(
+                                      height: 1920,
+                                      child: Stack(
+                                        children: [
+                                          // Staff columns
+                                          Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: staffBookings
+                                                .map((staffBooking) {
+                                              return StaffColumnWidget(
+                                                staffBooking: staffBooking,
+                                                currentTimePosition:
+                                                    currentTimePosition,
+                                                currentTimeString:
+                                                    currentTimeString,
+                                                onTimeSlotTap: (time) {
+                                                  print(
+                                                      'Tapped on ${staffBooking.staff.name} at $time');
+                                                },
+                                                onBookingTap: (booking) {
+                                                  print(
+                                                      'Tapped on booking: ${booking.id}');
+                                                },
+                                              );
+                                            }).toList(),
+                                          ),
+                                          // Continuous red line across all staff columns
+                                          Positioned(
+                                            top: currentTimePosition,
+                                            left: 0,
+                                            right: 0,
+                                            child: Container(
+                                              height: 2,
+                                              color: Colors.red,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
