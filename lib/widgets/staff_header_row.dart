@@ -18,13 +18,10 @@ class StaffHeaderRow extends StatelessWidget {
     final isUnavailable = staffBooking.unavailability.isNotEmpty;
 
     return Container(
-      width: 300,
+      width: 200,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
-        border: Border(
-          right: BorderSide(color: AppTheme.getBorderColor(context)),
-        ),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -91,7 +88,7 @@ class StaffHeaderRow extends StatelessWidget {
           BoxShadow(
             color: Colors.black.withOpacity(0.08),
             // blurRadius: 10,
-            offset: const Offset(0, 2),
+            // offset: const Offset(0, 2),
           ),
         ],
       ),

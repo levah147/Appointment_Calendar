@@ -26,7 +26,7 @@ class StaffColumnWidget extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      width: 300,
+      width: 200,
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
         border: Border(
