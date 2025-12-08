@@ -105,7 +105,8 @@ class TimeColumn extends StatelessWidget {
                     ),
                     // Current time tooltip/bubble (red line goes through middle)
                     Positioned(
-                      top: currentTimePosition - 10,
+                      top:
+                          currentTimePosition - 13, // Center bubble on red line
                       left: 0,
                       right: 0,
                       child: Center(
