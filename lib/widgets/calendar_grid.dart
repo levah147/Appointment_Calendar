@@ -51,7 +51,7 @@ class CalendarGrid extends StatelessWidget {
                     );
                   }).toList(),
                 ),
-                // Continuous red line across all staff columns
+                // Continuous red line across all staff columns (extends to time column)
                 Positioned(
                   top: currentTimePosition,
                   left: 0,

@@ -99,7 +99,7 @@ class TimeColumn extends StatelessWidget {
                       left: 0,
                       right: 0,
                       child: Container(
-                        // height: 1,
+                        height: 2,
                         color: Colors.red,
                       ),
                     ),
@@ -111,8 +111,8 @@ class TimeColumn extends StatelessWidget {
                       child: Center(
                         child: Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
+                            horizontal: 11,
+                            vertical: 6,
                           ),
                           decoration: BoxDecoration(
                             color: Theme.of(context).colorScheme.surface,
